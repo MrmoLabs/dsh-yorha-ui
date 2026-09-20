@@ -22,8 +22,9 @@
 - 经典 YoRHa 风格工作区导航：项目标题、机械导轨、反色视频选中态
 - 32px 注册网格、轻量纸张纹理、顶部系统状态轨
 - 编辑器、菜单、对话框、代码块和语法高亮统一配色
+- 新会话页 Hero 重塑：YoRHa 完整标志（纹章+字母，临摹自粉丝矢量作品 [YoRHaLogo](https://github.com/gigsoll/YoRHaLogo)）通过官方 `conversation.hero.brand.mark` 插槽替换鲸鱼标志，以地堡屏幕风格缓慢旋转，下方展示 `FOR THE GLORY OF MANKIND` 口号（遵循减弱动效偏好）；左上角侧栏品牌标志同步替换为同款纹章
 - 右下角 `YoRHa // TACTICAL INTERFACE 11945` 可直接打开源码仓库
-- 无运行时 CDN、无图片依赖、无页面动画
+- 无运行时 CDN、无图片依赖、无游戏素材
 - 通过 DSH 的主题服务叠加令牌，可在主题重绘后保持生效
 
 ## 安装

@@ -87,6 +87,11 @@ async function loadClient(document = new FakeDocument()) {
     document,
     MutationObserver: FakeMutationObserver,
     window: {
+      React: {
+        createElement(type, props) {
+          return { type, props };
+        }
+      },
       __ModuleLoader__: {
         load(value) {
           registration = value;
@@ -97,16 +102,33 @@ async function loadClient(document = new FakeDocument()) {
 
   vm.runInNewContext(source, context, { filename: 'dist/client.js' });
   assert.ok(registration, 'client bundle must self-register');
-  return { client: registration.factory(() => assert.fail('bundle must not require runtime modules')), document, registration };
+  const fakeRequire = (specifier) => {
+    assert.equal(specifier, 'react', 'bundle may only require platform seed modules');
+    return context.window.React;
+  };
+  return { client: registration.factory(fakeRequire), document, registration };
 }
 
 function applyClient(client) {
   const effects = [];
   const tokenLayers = [];
+  const slotInjections = [];
+  const slotRegistrations = [];
   const ctx = {
     theme: {
       overrideTokens(source, tokens) {
         tokenLayers.push({ source, tokens });
+        return () => {};
+      }
+    },
+    slots: {
+      inject(name, register) {
+        slotInjections.push(name);
+        const disposer = register();
+        return typeof disposer === 'function' ? disposer : () => {};
+      },
+      register(options, component) {
+        slotRegistrations.push({ options, component });
         return () => {};
       }
     },
@@ -116,7 +138,7 @@ function applyClient(client) {
   };
 
   client.apply(ctx);
-  return { effects, tokenLayers };
+  return { effects, tokenLayers, slotInjections, slotRegistrations };
 }
 
 function decorationCleanup(effects) {
@@ -130,7 +152,48 @@ test('bundle registers the canonical package contract', async () => {
 
   assert.equal(registration.id, 'dsh-yorha-ui');
   assert.equal(typeof client.apply, 'function');
-  assert.deepEqual(Array.from(client.inject), ['theme']);
+  assert.deepEqual(Array.from(client.inject), ['theme', 'slots']);
+});
+
+test('apply occupies the hero brand-mark slot with the YoRHa emblem', async () => {
+  const { client } = await loadClient();
+  const { slotInjections, slotRegistrations } = applyClient(client);
+
+  assert.deepEqual(slotInjections, ['conversation.hero.brand.mark', 'sidebar.brand.mark']);
+  assert.equal(slotRegistrations.length, 2);
+  assert.equal(slotRegistrations[0].options.name, 'conversation.hero.brand.mark');
+  assert.equal(slotRegistrations[1].options.name, 'sidebar.brand.mark');
+  const sidebarMark = slotRegistrations[1].component({ size: 24 });
+  assert.match(sidebarMark.props.dangerouslySetInnerHTML.__html, /viewBox="45 -10 120 120"/);
+  assert.match(sidebarMark.props.dangerouslySetInnerHTML.__html, /width="24"/);
+  assert.equal(sidebarMark.props.className, 'dsh-yorha-sidebar-mark');
+  assert.equal(slotRegistrations[0].options.name, 'conversation.hero.brand.mark');
+  assert.equal(slotRegistrations[0].options.id, 'dsh-yorha-ui');
+  assert.equal(slotRegistrations[0].options.priority, undefined, 'priority is facade-assigned, never passed');
+
+  const element = slotRegistrations[0].component({ size: 34, className: 'hostFish' });
+  assert.equal(element.type, 'span');
+  assert.equal(element.props.className, 'dsh-yorha-hero-mark hostFish');
+  const html = element.props.dangerouslySetInnerHTML.__html;
+  assert.match(html, /width="34"/);
+  assert.match(html, /height="34"/);
+  assert.match(html, /viewBox="-33\.6 -83\.6 167\.2 269\.6"/);
+
+  const defaults = slotRegistrations[0].component();
+  assert.match(defaults.props.dangerouslySetInnerHTML.__html, /width="34"/);
+  assert.equal(defaults.props.className, 'dsh-yorha-hero-mark');
+});
+
+test('strict stylesheet carries the hero motto substitution and emblem spin', async () => {
+  const { client, document } = await loadClient();
+  applyClient(client);
+
+  const css = document.head.children[0].textContent;
+  assert.match(css, /content: 'FOR THE GLORY OF MANKIND'/);
+  assert.match(css, /\[class\*="_headline"\][^{]*\{[^}]*flex-direction: column/s);
+  assert.match(css, /@keyframes dsh-yorha-emblem-spin/);
+  assert.match(css, /prefers-reduced-motion: reduce/);
+  assert.doesNotMatch(css, /class\.[A-Za-z0-9_-]{5}_/);
 });
 
 test('apply mounts one token layer and shared decorations until the last cleanup', async () => {

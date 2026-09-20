@@ -22,8 +22,9 @@ It reshapes the DSH Web workspace, session list, composer, and overlays with san
 - YoRHa-style workspace navigation with project headers, mechanical rails, and a reverse-video active session
 - A 32px registration grid, subtle paper texture, and segmented system rail
 - Consistent colors for the composer, menus, dialogs, code blocks, and syntax highlighting
+- Blank-session hero rebrand: the YoRHa lockup (mark + letterforms, traced from the fan-made [YoRHaLogo](https://github.com/gigsoll/YoRHaLogo) vector) replaces the whale through the official `conversation.hero.brand.mark` slot, slowly rotating Bunker-screen style above the `FOR THE GLORY OF MANKIND` salute (honors reduced motion); the sidebar rail brand mark wears the same crest
 - A clickable `YoRHa // TACTICAL INTERFACE 11945` repository link in the lower-right corner
-- No runtime CDN, image dependencies, or page animations
+- No runtime CDN, image dependencies, or game assets
 - Theme-token overrides that survive DSH theme repaints
 
 ## Install

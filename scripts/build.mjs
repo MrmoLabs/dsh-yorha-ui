@@ -45,8 +45,10 @@ runTsc('tsconfig.client.json');
 await mkdir('dist', { recursive: true });
 const raw = await readFile(join(root, '.build', 'client', 'client.js'), 'utf8');
 const code = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-if (/\bimport\b|require\(/.test(code)) {
-  throw new Error('client bundle must not contain runtime imports/requires');
+const requires = [...code.matchAll(/require\("([^"]+)"\)/g)].map((match) => match[1]);
+const EXTERNALS = ['react']; // platform seed words resolved by the host module table
+if (/\bimport\b/.test(code) || requires.some((specifier) => !EXTERNALS.includes(specifier))) {
+  throw new Error(`client bundle must not contain runtime imports (requires found: ${requires.join(', ') || 'none'})`);
 }
 const banner = `window.__ModuleLoader__.load({id:"${NAME}",factory:(require)=>{var module={exports:{}};var exports=module.exports;`;
 const footer = 'return module.exports;}});';
