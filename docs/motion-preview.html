@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dsh-yorha-ui // 动效预览</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--dsw-alias-bg-base, #c9c5b4); color: var(--dsw-alias-label-primary, #26231e); font: 14px/1.6 Consolas, "Segoe UI", sans-serif; }
+    button { font: inherit; cursor: pointer; }
+    #root { min-height: 100vh; padding: 12px; }
+    .demo-shell { max-width: 1060px; margin: 36px auto 0; }
+    .demo-kicker { margin: 0 0 8px; color: var(--dsw-alias-state-warn-primary); font: 700 11px/1.4 Consolas, monospace; letter-spacing: .14em; }
+    h1 { margin: 0 0 8px; font-size: clamp(25px, 4vw, 39px); line-height: 1.2; letter-spacing: .06em; }
+    .demo-intro { max-width: 720px; margin: 0 0 20px; color: var(--dsw-alias-label-secondary); }
+    .demo-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .demo-controls button { min-height: 36px; padding: 6px 12px; border: 1px solid var(--dsw-alias-border-l3); background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-primary); }
+    .demo-layout { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); border: 1px solid var(--dsw-alias-border-l3); min-height: 420px; }
+    .demo_sidebarCol { padding: 12px; background: var(--dsw-specific-sidebar-fill); }
+    .demo-heading { margin: 0 0 20px; padding-bottom: 8px; border-bottom: 3px double var(--dsw-alias-border-l3); font: 700 11px/1.4 Consolas, monospace; letter-spacing: .13em; }
+    .demo_projectRow, .demo_sessionRow { display: block; width: 100%; text-align: left; font: 700 12px/1.4 Consolas, monospace; }
+    .demo_projectRow { padding: 8px 8px 8px 27px; border-right: 0; border-left: 0; cursor: pointer; }
+    .demo-list { padding-top: 8px; }
+    .demo_sessionRow { margin-bottom: 3px; padding: 8px 8px 8px 22px; border-top: 0; border-right: 0; border-bottom: 0; background: transparent; cursor: pointer; }
+    .demo-main { padding: 12px; background: var(--dsw-alias-bg-layer-1); }
+    .demo-label { margin: 0 0 12px; font: 700 11px/1.4 Consolas, monospace; letter-spacing: .12em; color: var(--dsw-alias-state-warn-primary); }
+    .demo-main h2 { margin: 0 0 14px; font-size: 23px; }
+    .demo-main p { max-width: 520px; margin: 0 0 12px; }
+    .demo-readout { margin-top: 24px; padding: 12px; border: 1px solid var(--dsw-alias-border-l3); font: 12px/1.7 Consolas, monospace; }
+    .demo-readout strong { color: var(--dsw-alias-state-warn-primary); }
+    .demo-note { margin: 18px 0 0; color: var(--dsw-alias-label-secondary); font-size: 12px; }
+    @media (max-width: 720px) { .demo-shell { margin-top: 16px; } .demo-layout { grid-template-columns: 1fr; } }
+  </style>
+  <script>window.__ModuleLoader__ = { load(registration) { window.yorhaModule = registration.factory(() => { throw new Error('Unexpected runtime dependency'); }); } };</script>
+  <script src="../dist/client.js"></script>
+</head>
+<body>
+  <div id="root">
+    <main class="demo-shell">
+      <p class="demo-kicker">[ + ] MOTION PROTOCOL // 01</p>
+      <h1>YoRHa 动效预览</h1>
+      <p class="demo-intro">点击项目标题反复展开，再切换会话。动效只在状态变化时出现，最终状态保持静止。</p>
+      <div class="demo-controls">
+        <button id="mode" type="button" aria-pressed="false">切换深色模式</button>
+      </div>
+      <div class="demo-layout">
+        <aside class="demo_sidebarCol" aria-label="会话导航预览">
+          <p class="demo-heading">[ + ] SYSTEM NAVIGATION</p>
+          <button id="project" class="demo_projectRow" type="button" aria-expanded="false" aria-controls="sessions">DSH PLUGINS</button>
+          <div id="sessions" class="demo-list" role="tablist" aria-label="会话" hidden>
+            <button class="demo_sessionRow" type="button" role="tab" aria-selected="false">主题调试 // 01</button>
+            <button class="demo_sessionRow" type="button" role="tab" aria-selected="false">界面检视 // 02</button>
+            <button class="demo_sessionRow" type="button" role="tab" aria-selected="false">系统记录 // 03</button>
+          </div>
+        </aside>
+        <section class="demo-main" aria-live="polite">
+          <p class="demo-label">[ - ] TACTICAL INTERFACE // 11945</p>
+          <h2>状态确认</h2>
+          <p>展开项目时，菱形节点在 120ms 内完成一次确认；选中会话时，琥珀色细线在 140ms 内完成一次锁定。</p>
+          <p>没有持续闪烁、发光、镜头晃动或额外图片素材。</p>
+          <div class="demo-readout">PROJECT <strong id="projectState">CLOSED</strong><br>SESSION <strong id="sessionState">NONE</strong></div>
+        </section>
+      </div>
+      <p class="demo-note">此页加载仓库的 dist/client.js，演示真实插件 CSS；布局是独立预览，不代表 DSH Web 的完整页面。系统启用“减少动态效果”时，动效会停用。</p>
+    </main>
+  </div>
+  <script>
+    const theme = window.yorhaModule;
+    let tokenPairs;
+    const modeButton = document.querySelector('#mode');
+    const project = document.querySelector('#project');
+    const sessions = document.querySelector('#sessions');
+    const sessionButtons = [...sessions.querySelectorAll('[role="tab"]')];
+    function applyTokens() {
+      const dark = document.body.hasAttribute('data-ds-dark-theme');
+      for (const [name, pair] of Object.entries(tokenPairs ?? {})) document.body.style.setProperty(name, pair[dark ? 'dark' : 'light']);
+    }
+    theme.apply({
+      theme: { overrideTokens(_source, tokens) { tokenPairs = tokens; applyTokens(); return () => {}; } },
+      effect(mount) { mount(); }
+    });
+    modeButton.addEventListener('click', () => {
+      const dark = document.body.toggleAttribute('data-ds-dark-theme');
+      modeButton.setAttribute('aria-pressed', String(dark));
+      modeButton.textContent = dark ? '切换浅色模式' : '切换深色模式';
+      applyTokens();
+    });
+    project.addEventListener('click', () => {
+      const expanded = project.getAttribute('aria-expanded') !== 'true';
+      project.setAttribute('aria-expanded', String(expanded));
+      sessions.hidden = !expanded;
+      document.querySelector('#projectState').textContent = expanded ? 'OPEN' : 'CLOSED';
+    });
+    sessionButtons.forEach((button, index) => button.addEventListener('click', () => {
+      sessionButtons.forEach(row => row.setAttribute('aria-selected', String(row === button)));
+      document.querySelector('#sessionState').textContent = `0${index + 1} LOCKED`;
+    }));
+  </script>
+</body>
+</html>

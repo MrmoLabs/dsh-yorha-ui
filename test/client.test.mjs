@@ -145,6 +145,7 @@ test('apply mounts one token layer and shared decorations until the last cleanup
   assert.equal(document.body.children.length, 1);
   assert.equal(document.head.children[0].dataset.plugin, 'dsh-yorha-ui');
   assert.equal(document.body.children[0].className, 'dsh-yorha-repository-link');
+  assert.equal(document.body.children[0].ariaLabel, 'Open the dsh-yorha-ui source repository');
   assert.equal(document.body.children[0].rel, 'noreferrer');
   assert.ok(document.body.classList.contains('dsh-plugin-yorha'));
 

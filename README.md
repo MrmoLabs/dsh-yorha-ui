@@ -23,7 +23,8 @@ It reshapes the DSH Web workspace, session list, composer, and overlays with san
 - A 32px registration grid, subtle paper texture, and segmented system rail
 - Consistent colors for the composer, menus, dialogs, code blocks, and syntax highlighting
 - A clickable `YoRHa // TACTICAL INTERFACE 11945` repository link in the lower-right corner
-- No runtime CDN, image dependencies, or page animations
+- Short, one-shot selection and expansion feedback; no continuous page animation
+- Reduced-motion support, with no runtime CDN or image dependencies
 - Theme-token overrides that survive DSH theme repaints
 
 ## Install
@@ -82,6 +83,15 @@ npm.cmd pack --dry-run
 ```
 
 The repository pins pnpm 10 through `packageManager`; Corepack-enabled environments will select the matching version automatically. `pnpm test` rebuilds the package before running the regression suite.
+
+To inspect the selection and expansion feedback without changing a DSH installation, build the package and run the local preview:
+
+```powershell
+node scripts/build.mjs
+node scripts/serve-motion-preview.mjs
+```
+
+Open `http://127.0.0.1:4173/` and click the project and session rows. The preview loads the actual client bundle, but its surrounding layout is illustrative.
 
 Build output is written to `dist/`:
 

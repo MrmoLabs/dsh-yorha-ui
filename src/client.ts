@@ -257,11 +257,17 @@ body.dsh-plugin-yorha .dsh-yorha-repository-link {
   z-index: 2147481999;
   right: 22px;
   bottom: 12px;
-  color: var(--yorha-ink-soft);
-  font: 600 9px/1.2 var(--ds-font-family-code, monospace);
-  letter-spacing: 0.18em;
+  color: var(--yorha-ink);
+  font: 600 10px/1.4 var(--ds-font-family-code, monospace);
+  letter-spacing: 0.08em;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+body.dsh-plugin-yorha .dsh-yorha-repository-link:hover,
+body.dsh-plugin-yorha .dsh-yorha-repository-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* Three-column chassis: hard dividers and an amber activity notch. */
@@ -366,6 +372,12 @@ body.dsh-plugin-yorha [class*="_projectRow"][aria-expanded="true"] {
 body.dsh-plugin-yorha [class*="_projectRow"][aria-expanded="true"]::before {
   border-color: var(--yorha-accent);
   background: var(--yorha-accent);
+  animation: yorha-directory-confirm 120ms steps(2, end) both;
+}
+
+@keyframes yorha-directory-confirm {
+  0% { background: transparent; border-color: var(--yorha-ink-soft); }
+  100% { background: var(--yorha-accent); border-color: var(--yorha-accent); }
 }
 
 body.dsh-plugin-yorha [class*="_sessionRow"] {
@@ -409,6 +421,24 @@ body.dsh-plugin-yorha [class*="_sessionRow"][aria-selected="true"] * {
 body.dsh-plugin-yorha [class*="_sessionRow"][aria-selected="true"]::before {
   border-color: var(--yorha-accent);
   background: var(--yorha-accent);
+}
+
+/* One-shot target acquisition: the persistent left rail still identifies selection. */
+body.dsh-plugin-yorha [class*="_sessionRow"][aria-selected="true"]::after {
+  content: '';
+  position: absolute;
+  inset: auto 9px 1px 0;
+  height: 1px;
+  background: var(--yorha-accent);
+  pointer-events: none;
+  transform-origin: left center;
+  animation: yorha-target-lock 140ms steps(5, end) both;
+}
+
+@keyframes yorha-target-lock {
+  0% { transform: scaleX(0); opacity: 1; }
+  80% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
 }
 
 body.dsh-plugin-yorha [class*="_triggerRow"] {
@@ -493,6 +523,32 @@ body.dsh-plugin-yorha ::selection {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  body.dsh-plugin-yorha [class*="_projectRow"][aria-expanded="true"]::before {
+    animation: none;
+  }
+
+  body.dsh-plugin-yorha [class*="_sessionRow"][aria-selected="true"]::after {
+    display: none;
+  }
+}
+
+@media print {
+  body.dsh-plugin-yorha #root::before,
+  body.dsh-plugin-yorha [class*="_sidebarCol"]::after,
+  body.dsh-plugin-yorha [class*="_sessionRow"][aria-selected="true"]::after,
+  body.dsh-plugin-yorha .dsh-yorha-repository-link {
+    display: none !important;
+  }
+
+  body.dsh-plugin-yorha [class*="_frame"],
+  body.dsh-plugin-yorha [class*="_centerCol"],
+  body.dsh-plugin-yorha [class*="_scrollBody"],
+  body.dsh-plugin-yorha [class*="_sidebarCol"] {
+    background-image: none !important;
+  }
+}
+
 `.trim();
 
 /** Service surface this browser plugin requires (`theme` is the UI theme seat). */
@@ -566,6 +622,7 @@ function mountDecorations(): boolean {
     const repositoryLink = document.createElement('a');
     repositoryLink.className = 'dsh-yorha-repository-link';
     repositoryLink.href = REPOSITORY_URL;
+    repositoryLink.ariaLabel = 'Open the dsh-yorha-ui source repository';
     repositoryLink.target = '_blank';
     repositoryLink.rel = 'noreferrer';
     repositoryLink.textContent = 'YoRHa // TACTICAL INTERFACE  11945';
